@@ -222,10 +222,16 @@ function render() {
 }
 
 function showToast(msg) {
+  if (!els.toast) return;
   els.toast.textContent = msg;
   els.toast.classList.add("show");
+  els.toast.setAttribute("aria-hidden", "false");
   clearTimeout(showToast._t);
-  showToast._t = setTimeout(() => els.toast.classList.remove("show"), 2800);
+  showToast._t = setTimeout(() => {
+    els.toast.classList.remove("show");
+    els.toast.setAttribute("aria-hidden", "true");
+    els.toast.textContent = "";
+  }, 2800);
 }
 
 function openWinModal(segment) {
@@ -244,8 +250,10 @@ function openWinModal(segment) {
 
   els.winModal.hidden = false;
   els.collectBtn.focus();
-  els.liveRegion.textContent =
-    myr === 0 ? "No win this spin." : `You won ${label}.`;
+  if (els.liveRegion) {
+    els.liveRegion.textContent =
+      myr === 0 ? "No win this spin." : `You won ${label}.`;
+  }
 }
 
 function closeWinModal() {

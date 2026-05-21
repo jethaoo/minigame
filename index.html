@@ -64,6 +64,12 @@
             <div class="arena-card__mascot mascot-wrap">
               <img src="assets/mascot-guard0.png" alt="" class="mascot-img" id="mascotImg" width="280" height="360">
             </div>
+            <div
+              class="arena-picker__segments arena-picker__segments--dock"
+              id="arenaPickerSegments"
+              role="group"
+              aria-label="Choose arena"
+            ></div>
             <div class="arena-card__wheel">
               <div class="wheel-stage wheel-stage--squid" id="wheelStage">
                 <div id="wheelRotor" class="wheel-rotor">
@@ -72,7 +78,10 @@
                 </div>
                 <img src="assets/wheel-frame.png" alt="" class="wheel-frame" id="wheelFrameImg" width="400" height="400">
                 <button type="button" id="spinBtn" class="wheel-hub">
-                  <span class="hub-main">SPIN NOW</span>
+                  <span class="hub-main">
+                    <span>SPIN</span>
+                    <span>NOW</span>
+                  </span>
                   <span class="hub-cost">
                     <img src="assets/icon-triangle.svg" alt="" class="hub-cost-icon" width="14" height="14">
                     <span>1</span>
@@ -80,10 +89,6 @@
                 </button>
               </div>
             </div>
-          </div>
-
-          <section class="arena-picker arena-picker--dock" id="arenaPicker" aria-label="Choose arena">
-            <div class="arena-picker__segments" id="arenaPickerSegments"></div>
             <aside class="arena-picker__detail">
               <h2 class="arena-picker__zone" id="arenaZoneName">Red Light, Green Light</h2>
               <p class="arena-picker__tickets">
@@ -93,7 +98,7 @@
               </p>
               <span id="tokenCount" class="sr-only">12</span>
             </aside>
-          </section>
+          </div>
         </section>
 
         <section class="below-arena" aria-label="Missions and winners">
@@ -131,6 +136,29 @@
         </section>
       </div>
     </div>
+
+    <nav class="mobile-bottom-nav" aria-label="Mobile navigation">
+      <a href="#" class="mobile-nav__item">
+        <span class="mobile-nav__icon" aria-hidden="true">&#9733;</span>
+        <span class="mobile-nav__label">HOME</span>
+      </a>
+      <a href="#" class="mobile-nav__item">
+        <span class="mobile-nav__icon" aria-hidden="true">&#128176;</span>
+        <span class="mobile-nav__label">WALLET</span>
+      </a>
+      <a href="#" class="mobile-nav__item mobile-nav__item--game is-active" aria-current="page">
+        <span class="mobile-nav__game-art" aria-hidden="true"></span>
+        <span class="mobile-nav__game-label">SPIN NOW!</span>
+      </a>
+      <a href="#" class="mobile-nav__item">
+        <span class="mobile-nav__icon mobile-nav__icon--promo" aria-hidden="true">&#127873;</span>
+        <span class="mobile-nav__label">PROMOTION</span>
+      </a>
+      <a href="#" class="mobile-nav__item">
+        <span class="mobile-nav__icon" aria-hidden="true">&#128172;</span>
+        <span class="mobile-nav__label">LIVE CHAT</span>
+      </a>
+    </nav>
   </div>
 
   <div id="winModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="winModalTitle">
@@ -142,7 +170,7 @@
     </div>
   </div>
 
-  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <div id="toast" class="toast" role="status" aria-live="polite" aria-hidden="true"></div>
   <div id="liveRegion" class="sr-only" aria-live="polite"></div>
 
   <script type="module" src="js/app.js"></script>
