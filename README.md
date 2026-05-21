@@ -56,14 +56,14 @@ Eight tiers per wheel. **Weights are identical in every arena**; only `myr` / `l
 
 | Tier | `id` | Weight | Chance | Icon | Squid `sectorColor` | Arena 1 | Arena 2 | Arena 3 |
 |------|------|--------|--------|------|---------------------|---------|---------|---------|
-| 1 | 0 | 22 | 22% | circle | `#24151b` | MYR 0 | MYR 0 | MYR 0 |
-| 2 | 1 | 18 | 18% | square | `#005f5b` | MYR 3 | MYR 9 | MYR 28 |
-| 3 | 2 | 16 | 16% | circle | `#7a1024` | MYR 8 | MYR 24 | MYR 75 |
+| 1 | 0 | 23 | 23% | circle | `#24151b` | MYR 0 | MYR 0 | MYR 0 |
+| 2 | 1 | 19 | 19% | square | `#005f5b` | MYR 3 | MYR 9 | MYR 28 |
+| 3 | 2 | 17 | 17% | circle | `#7a1024` | MYR 8 | MYR 24 | MYR 75 |
 | 4 | 3 | 14 | 14% | circle | `#b11226` | MYR 18 | MYR 54 | MYR 168 |
 | 5 | 4 | 12 | 12% | triangle | `#151923` | MYR 28 | MYR 84 | MYR 260 |
-| 6 | 5 | 10 | 10% | square | `#0b6f3a` | MYR 68 | MYR 204 | MYR 630 |
-| 7 | 6 | 5 | 5% | triangle | `#d4a017` | MYR 128 | MYR 384 | MYR 1,200 |
-| 8 | 7 | 3 | 3% | triangle | `#f0c85a` | MYR 288 | MYR 888 | MYR 2,688 |
+| 6 | 5 | 9 | 9% | square | `#0b6f3a` | MYR 68 | MYR 204 | MYR 630 |
+| 7 | 6 | 4 | 4% | triangle | `#d4a017` | MYR 128 | MYR 384 | MYR 1,200 |
+| 8 | 7 | 2 | 2% | triangle | `#f0c85a` | MYR 288 | MYR 888 | MYR 2,688 |
 | **Total** | | **100** | **100%** | | | | | |
 
 **Casino theme (Arena 2):** Wheel *labels* and payouts use the table above; sector *colors* on the conic background use fixed `CASINO_COLORS` by slot index (visual only, does not affect odds).
@@ -88,9 +88,9 @@ Implemented in `pickSegmentIndex(segments)` ([`js/config.js`](js/config.js)):
 
 | Arena | E[value] per spin |
 |-------|-------------------|
-| 1 | ~29.54 |
-| 2 | ~90.99 |
-| 3 | ~274.79 |
+| 1 | ~24.81 |
+| 2 | ~74.91 |
+| 3 | ~231.25 |
 
 *(Informational only; not shown in UI. Tokens are not convertible to MYR in the prototype.)*
 

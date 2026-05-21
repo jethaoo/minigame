@@ -6,14 +6,14 @@ export const SPIN_DURATION_MS = 4200;
 export const DEFAULT_ARENA_ID = 1;
 
 const SEGMENT_TEMPLATE = [
-  { icon: "circle", sectorColor: "#24151b", weight: 22 },
-  { icon: "square", sectorColor: "#005f5b", weight: 18 },
-  { icon: "circle", sectorColor: "#7a1024", weight: 16 },
+  { icon: "circle", sectorColor: "#24151b", weight: 23 },
+  { icon: "square", sectorColor: "#005f5b", weight: 19 },
+  { icon: "circle", sectorColor: "#7a1024", weight: 17 },
   { icon: "circle", sectorColor: "#b11226", weight: 14 },
   { icon: "triangle", sectorColor: "#151923", weight: 12 },
-  { icon: "square", sectorColor: "#0b6f3a", weight: 10 },
-  { icon: "triangle", sectorColor: "#d4a017", weight: 5 },
-  { icon: "triangle", sectorColor: "#f0c85a", weight: 3 },
+  { icon: "square", sectorColor: "#0b6f3a", weight: 9 },
+  { icon: "triangle", sectorColor: "#d4a017", weight: 4 },
+  { icon: "triangle", sectorColor: "#f0c85a", weight: 2 },
 ];
 
 const ARENA_PRIZES = {
