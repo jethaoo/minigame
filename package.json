@@ -1,0 +1,19 @@
+{
+  "name": "squid-casino-spin-minigame",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "A Squid Game inspired casino spin-to-win minigame built with vanilla HTML, CSS, and JavaScript.",
+  "scripts": {
+    "dev": "npx serve .",
+    "start": "npx serve .",
+    "check:js": "node --check js/app.js && node --check js/config.js && node --check js/icons.js && node --check js/storage.js && node --check js/wheel.js"
+  },
+  "keywords": [
+    "minigame",
+    "casino",
+    "spin-wheel",
+    "vanilla-js"
+  ],
+  "license": "UNLICENSED"
+}

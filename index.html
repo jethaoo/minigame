@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Spin to Win</title>
+  <link rel="icon" href="assets/favicon.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div id="game" class="game">
+    <div class="app-layout">
+      <aside class="app-sidebar" aria-label="Site navigation">
+        <div class="sidebar-banners">
+          <a href="#" class="sidebar-banner sidebar-banner--gold">Tournament</a>
+          <a href="#" class="sidebar-banner sidebar-banner--blue">Share &amp; Earn</a>
+        </div>
+        <nav class="sidebar-nav">
+          <a href="#" class="sidebar-nav__link"><span class="sidebar-nav__icon" aria-hidden="true">&#9733;</span> HOME</a>
+          <a href="#" class="sidebar-nav__link"><span class="sidebar-nav__icon" aria-hidden="true">&#128176;</span> WALLET</a>
+          <a href="#" class="sidebar-nav__link"><span class="sidebar-nav__icon" aria-hidden="true">&#127873;</span> PROMOTION</a>
+          <a href="#" class="sidebar-nav__link"><span class="sidebar-nav__icon" aria-hidden="true">&#128172;</span> LIVE CHAT</a>
+        </nav>
+        <a href="#" class="sidebar-promo">
+          <span class="sidebar-promo__label">Spin Now!</span>
+        </a>
+        <nav class="sidebar-games">
+          <a href="#" class="sidebar-games__link">Slots</a>
+          <a href="#" class="sidebar-games__link">Casino</a>
+          <a href="#" class="sidebar-games__link">Sport / E-sport</a>
+          <a href="#" class="sidebar-games__link">Arcade / Fishing</a>
+          <a href="#" class="sidebar-games__link">4D</a>
+          <a href="#" class="sidebar-games__link">Redeem Voucher</a>
+        </nav>
+        <label class="sidebar-dev skip-label">
+          <input type="checkbox" id="skipAnimation">
+          <span>Skip animation</span>
+        </label>
+      </aside>
+
+      <div class="app-main">
+        <section class="arena-card" aria-label="Spin wheel arena">
+          <div class="arena-card__bg" id="bgLayer" aria-hidden="true"></div>
+
+          <header class="arena-card__header">
+            <p class="arena-card__promo">
+              Spin Now &amp; Win Up To <strong id="maxPrizeDisplay">MYR 2,688</strong>
+            </p>
+            <div class="arena-card__badge" id="arenaBadge">
+              <span class="arena-card__badge-prize" id="arenaBadgePrize">
+                <span class="arena-card__jackpot-label">Jackpot</span>
+                <span class="arena-card__jackpot-amount">
+                  <span class="arena-card__jackpot-currency">MYR</span>
+                  <strong>288</strong>
+                </span>
+              </span>
+            </div>
+          </header>
+
+          <div class="arena-card__stage">
+            <div class="arena-card__mascot mascot-wrap">
+              <img src="assets/mascot-guard0.png" alt="" class="mascot-img" id="mascotImg" width="280" height="360">
+            </div>
+            <div class="arena-card__wheel">
+              <div class="wheel-stage wheel-stage--squid" id="wheelStage">
+                <div id="wheelRotor" class="wheel-rotor">
+                  <div id="wheelSectors" class="wheel-sectors" aria-hidden="true"></div>
+                  <div id="wheelSegments" class="wheel-segments"></div>
+                </div>
+                <img src="assets/wheel-frame.png" alt="" class="wheel-frame" id="wheelFrameImg" width="400" height="400">
+                <button type="button" id="spinBtn" class="wheel-hub">
+                  <span class="hub-main">SPIN NOW</span>
+                  <span class="hub-cost">
+                    <img src="assets/icon-triangle.svg" alt="" class="hub-cost-icon" width="14" height="14">
+                    <span>1</span>
+                  </span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <section class="arena-picker arena-picker--dock" id="arenaPicker" aria-label="Choose arena">
+            <div class="arena-picker__segments" id="arenaPickerSegments"></div>
+            <aside class="arena-picker__detail">
+              <h2 class="arena-picker__zone" id="arenaZoneName">Red Light, Green Light</h2>
+              <p class="arena-picker__tickets">
+                <img src="assets/icon-triangle.svg" alt="" class="arena-picker__ticket-icon" width="20" height="20">
+                Ticket Left: <span id="arenaTicketLeft">12</span>
+                <button type="button" id="addTokens" class="btn-add-tokens" aria-label="Add tokens">+</button>
+              </p>
+              <span id="tokenCount" class="sr-only">12</span>
+            </aside>
+          </section>
+        </section>
+
+        <section class="below-arena" aria-label="Missions and winners">
+          <article class="info-card info-card--mission" id="dailyMissionCard">
+            <header class="info-card__header">
+              <h2 class="info-card__title">
+                <span class="info-card__title-icon" aria-hidden="true">&#9776;</span>
+                Daily Mission
+              </h2>
+              <span class="info-card__progress" id="missionProgress">0/2</span>
+            </header>
+            <div class="mission-track" aria-hidden="true">
+              <div class="mission-track__bar">
+                <div class="mission-track__fill" id="missionTrackFill"></div>
+              </div>
+              <div class="mission-track__milestones">
+                <span class="mission-milestone"><span class="mission-milestone__dot"></span>100</span>
+                <span class="mission-milestone"><span class="mission-milestone__dot"></span>500</span>
+                <span class="mission-milestone"><span class="mission-milestone__dot"></span>1000</span>
+              </div>
+            </div>
+            <p class="info-card__stat">Total won: <strong id="walletAmount">MYR 0</strong></p>
+          </article>
+
+          <article class="info-card info-card--winners" id="winnerListCard">
+            <header class="info-card__header">
+              <h2 class="info-card__title">
+                <span class="info-card__title-icon info-card__title-icon--crown" aria-hidden="true">&#9819;</span>
+                Winner List
+              </h2>
+              <span class="info-card__deco" aria-hidden="true">&#127942;</span>
+            </header>
+            <ul class="winner-list" id="winnerList"></ul>
+          </article>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <div id="winModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="winModalTitle">
+    <div class="modal-card">
+      <h2 id="winModalTitle" class="modal-title">You won</h2>
+      <p id="winAmount" class="modal-amount">MYR 0</p>
+      <p id="winSubtitle" class="modal-subtitle"></p>
+      <button type="button" id="collectBtn" class="btn-collect">COLLECT</button>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <div id="liveRegion" class="sr-only" aria-live="polite"></div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
