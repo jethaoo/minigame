@@ -1,50 +1,39 @@
 export const STORAGE_KEY = "squidSpinState";
-export const SPIN_COST = 1;
 export const TOKEN_TOP_UP = 5;
 export const POINTER_ANGLE = 0;
 export const SEGMENT_ANGLE = 45;
 export const SPIN_DURATION_MS = 4200;
 export const DEFAULT_ARENA_ID = 1;
-export const MAX_DISPLAY_PRIZE = 2688;
-export const TOP_PRIZE_MYR = 288;
 
-export const ARENAS = [
-  {
-    id: 1,
-    zoneName: "Red Light, Green Light",
-    background: "assets/background-arena0.png",
-    mascot: "assets/mascot-guard0.png",
-    wheelFrame: "assets/wheel-frame.png",
-    wheelTheme: "squid",
-  },
-  {
-    id: 2,
-    zoneName: "Mingle",
-    background: "assets/background-arena1.png",
-    mascot: "assets/mascot-guard1.png",
-    wheelFrame: "assets/wheel-frame1.png",
-    wheelTheme: "casino",
-  },
-  {
-    id: 3,
-    zoneName: "Jump Rope",
-    background: "assets/background-arena2.png",
-    mascot: "assets/mascot-guard2.png",
-    wheelFrame: "assets/wheel-frame.png",
-    wheelTheme: "squid",
-  },
+const SEGMENT_TEMPLATE = [
+  { icon: "circle", sectorColor: "#24151b", weight: 22 },
+  { icon: "square", sectorColor: "#005f5b", weight: 18 },
+  { icon: "circle", sectorColor: "#7a1024", weight: 16 },
+  { icon: "circle", sectorColor: "#b11226", weight: 14 },
+  { icon: "triangle", sectorColor: "#151923", weight: 12 },
+  { icon: "square", sectorColor: "#0b6f3a", weight: 10 },
+  { icon: "triangle", sectorColor: "#d4a017", weight: 5 },
+  { icon: "triangle", sectorColor: "#f0c85a", weight: 3 },
 ];
 
-export const SEGMENTS = [
-  { id: 0, label: "MYR 18", myr: 18, sectorColor: "#b11226", icon: "circle", weight: 14 },
-  { id: 1, label: "MYR 128", myr: 128, sectorColor: "#d4a017", icon: "triangle", weight: 5 },
-  { id: 2, label: "MYR 68", myr: 68, sectorColor: "#0b6f3a", icon: "square", weight: 10 },
-  { id: 3, label: "MYR 28", myr: 28, sectorColor: "#151923", icon: "triangle", weight: 12 },
-  { id: 4, label: "MYR 8", myr: 8, sectorColor: "#7a1024", icon: "circle", weight: 16 },
-  { id: 5, label: "MYR 3", myr: 3, sectorColor: "#005f5b", icon: "square", weight: 18 },
-  { id: 6, label: "MYR 0", myr: 0, sectorColor: "#24151b", icon: "circle", weight: 22 },
-  { id: 7, label: "MYR 288", myr: 288, sectorColor: "#f0c85a", icon: "triangle", weight: 3 },
-];
+const ARENA_PRIZES = {
+  1: [0, 3, 8, 18, 28, 68, 128, 288],
+  2: [0, 9, 24, 54, 84, 204, 384, 888],
+  3: [0, 28, 75, 168, 260, 630, 1200, 2688],
+};
+
+function formatSegmentLabel(myr) {
+  return `MYR ${myr.toLocaleString("en-MY")}`;
+}
+
+function buildArenaSegments(prizes) {
+  return prizes.map((myr, id) => ({
+    id,
+    myr,
+    label: formatSegmentLabel(myr),
+    ...SEGMENT_TEMPLATE[id],
+  }));
+}
 
 export const CASINO_COLORS = [
   "#b11226",
@@ -57,22 +46,66 @@ export const CASINO_COLORS = [
   "#f0c85a",
 ];
 
+export const ARENAS = [
+  {
+    id: 1,
+    zoneName: "Red Light, Green Light",
+    background: "assets/background-arena0.png",
+    mascot: "assets/mascot-guard0.png",
+    wheelFrame: "assets/wheel-frame.png",
+    wheelTheme: "squid",
+    spinCost: 1,
+    maxDisplayPrize: 288,
+    segments: buildArenaSegments(ARENA_PRIZES[1]),
+  },
+  {
+    id: 2,
+    zoneName: "Mingle",
+    background: "assets/background-arena1.png",
+    mascot: "assets/mascot-guard1.png",
+    wheelFrame: "assets/wheel-frame1.png",
+    wheelTheme: "casino",
+    spinCost: 2,
+    maxDisplayPrize: 888,
+    segments: buildArenaSegments(ARENA_PRIZES[2]),
+  },
+  {
+    id: 3,
+    zoneName: "Jump Rope",
+    background: "assets/background-arena2.png",
+    mascot: "assets/mascot-guard2.png",
+    wheelFrame: "assets/wheel-frame.png",
+    wheelTheme: "squid",
+    spinCost: 5,
+    maxDisplayPrize: 2688,
+    segments: buildArenaSegments(ARENA_PRIZES[3]),
+  },
+];
+
 export function getArenaById(id) {
   return ARENAS.find((a) => a.id === id) ?? ARENAS[0];
 }
 
-export function pickSegmentIndex() {
-  const total = SEGMENTS.reduce((sum, s) => sum + s.weight, 0);
+export function getArenaSegments(arenaId) {
+  return getArenaById(arenaId).segments;
+}
+
+export function getArenaTopPrizeMYR(arenaId) {
+  return getArenaById(arenaId).maxDisplayPrize;
+}
+
+export function pickSegmentIndex(segments) {
+  const total = segments.reduce((sum, s) => sum + s.weight, 0);
   let roll = Math.random() * total;
-  for (const segment of SEGMENTS) {
+  for (const segment of segments) {
     roll -= segment.weight;
     if (roll <= 0) return segment.id;
   }
-  return SEGMENTS[SEGMENTS.length - 1].id;
+  return segments[segments.length - 1].id;
 }
 
-export function getSegmentById(id) {
-  return SEGMENTS.find((s) => s.id === id) ?? SEGMENTS[0];
+export function getSegmentById(id, segments) {
+  return segments.find((s) => s.id === id) ?? segments[0];
 }
 
 function shadeHex(hex, amount) {
@@ -102,17 +135,17 @@ function buildConicFromColors(colors) {
   return `conic-gradient(from 0deg, ${stops.join(", ")})`;
 }
 
-function getSquidConic() {
-  return buildConicFromColors(SEGMENTS.map((s) => s.sectorColor));
+function getSquidConic(segments) {
+  return buildConicFromColors(segments.map((s) => s.sectorColor));
 }
 
 function getCasinoConic() {
   return buildConicFromColors(CASINO_COLORS);
 }
 
-export function getSectorBackgroundLayers(theme = "squid") {
+export function getSectorBackgroundLayers(theme = "squid", segments) {
   const hub = "#2a2438";
-  const conic = theme === "casino" ? getCasinoConic() : getSquidConic();
+  const conic = theme === "casino" ? getCasinoConic() : getSquidConic(segments);
   return [
     `radial-gradient(circle at 50% 50%, #3d3548 0%, ${hub} 26%, rgba(42, 36, 56, 0) 28%)`,
     "radial-gradient(circle at 50% 30%, rgba(255, 255, 255, 0.28) 0%, rgba(42, 36, 56, 0) 50%)",

@@ -229,13 +229,15 @@ html, body {
   position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
+  justify-content: center;
   margin: 0;
   max-width: 62%;
+  min-width: min(100%, 280px);
+  min-height: 2.35rem;
   padding: 0.42rem 0.85rem;
   overflow: hidden;
   border: 1px solid rgba(255, 215, 96, 0.65);
-  border-radius: 999px;
+  border-radius: 0;
   background:
     linear-gradient(90deg, rgba(70, 8, 20, 0.9), rgba(136, 14, 34, 0.92) 38%, rgba(28, 12, 14, 0.92)),
     radial-gradient(circle at 30% 0%, rgba(255, 224, 112, 0.34), transparent 46%);
@@ -243,6 +245,23 @@ html, body {
     0 0 0 2px rgba(94, 12, 22, 0.65),
     0 8px 22px rgba(0, 0, 0, 0.34),
     0 0 24px rgba(255, 196, 64, 0.2);
+}
+
+.arena-card__promo-panel {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: inherit;
+  box-sizing: border-box;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.arena-card__promo-panel--static {
+  position: absolute;
+  gap: 0.35rem;
   color: #ffe9a6;
   font-family: "Bebas Neue", "Inter", system-ui, sans-serif;
   font-size: clamp(1.1rem, 2.7vw, 1.6rem);
@@ -253,11 +272,11 @@ html, body {
   text-shadow:
     0 1px 0 #5b2606,
     0 3px 10px rgba(0, 0, 0, 0.75);
-  transform-origin: left center;
-  animation: jackpot-pop 5.6s ease-in-out infinite;
+  transform-origin: center;
+  animation: promo-alt-static 8s ease-in-out infinite;
 }
 
-.arena-card__promo::before {
+.arena-card__promo-panel--static::before {
   content: "";
   position: absolute;
   inset: -60% auto -60% -35%;
@@ -273,7 +292,93 @@ html, body {
   pointer-events: none;
 }
 
-.arena-card__promo strong {
+.arena-card__promo-panel--marquee {
+  animation: promo-alt-marquee 8s ease-in-out infinite;
+}
+
+.arena-card__promo-marquee {
+  width: 100%;
+  overflow: hidden;
+}
+
+.arena-card__promo-track {
+  display: inline-flex;
+  align-items: center;
+  gap: 2.5rem;
+  white-space: nowrap;
+  will-change: transform;
+  animation: promo-marquee-rtl 4s linear infinite;
+}
+
+.arena-card__promo-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0 0.25rem;
+  color: #ffe9a6;
+  font-family: "Bebas Neue", "Inter", system-ui, sans-serif;
+  font-size: clamp(1.1rem, 2.7vw, 1.6rem);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  text-transform: uppercase;
+  text-shadow:
+    0 1px 0 #5b2606,
+    0 3px 10px rgba(0, 0, 0, 0.75);
+}
+
+.arena-card__promo-item strong {
+  padding: 0.08rem 0.4rem;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #fff2a8 0%, #f0c85a 44%, #a96908 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.72),
+    0 0 16px rgba(255, 212, 84, 0.38);
+  color: #351503;
+  font-weight: 800;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+
+@keyframes promo-alt-static {
+  0%, 20% {
+    opacity: 1;
+    visibility: visible;
+  }
+  26%, 96% {
+    opacity: 0;
+    visibility: hidden;
+  }
+  100% {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
+@keyframes promo-alt-marquee {
+  0%, 20% {
+    opacity: 0;
+    visibility: hidden;
+  }
+  26%, 94% {
+    opacity: 1;
+    visibility: visible;
+  }
+  100% {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+@keyframes promo-marquee-rtl {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(var(--promo-marquee-loop, -50%));
+  }
+}
+
+.arena-card__promo-panel--static strong {
   position: relative;
   z-index: 1;
   display: inline-flex;
@@ -1669,6 +1774,38 @@ html, body {
   color: #fff;
 }
 
+@media (min-width: 1024px) {
+  :root {
+    --arena-header-height: 80px;
+  }
+
+  .arena-card__header {
+    justify-content: center;
+    padding: 0.75rem 1.5rem;
+  }
+
+  .arena-card__promo {
+    width: 100%;
+    max-width: none;
+    flex: 1 1 auto;
+    min-height: 2.85rem;
+    padding: 0.5rem 1.1rem;
+  }
+
+  .arena-card__promo-panel--static {
+    font-size: clamp(1.35rem, 2.2vw, 1.85rem);
+  }
+
+  .arena-card__promo-item {
+    font-size: clamp(1.35rem, 2.2vw, 1.85rem);
+  }
+
+  .arena-card__promo-track {
+    gap: 3.5rem;
+    animation-duration: 5s;
+  }
+}
+
 @media (max-width: 1023px) {
   .app-layout {
     grid-template-columns: 1fr;
@@ -1762,23 +1899,29 @@ html, body {
 
   .arena-card__promo {
     flex: 1 1 100%;
-    flex-wrap: wrap;
     justify-content: center;
     min-width: 0;
     max-width: none;
     width: 100%;
+    min-height: 2.5rem;
     padding: 0.4rem 0.8rem;
-    font-size: clamp(1rem, 4.6vw, 1.35rem);
-    letter-spacing: 0.045em;
-    row-gap: 0.12rem;
-    text-align: center;
-    transform-origin: center;
-    animation: mobile-jackpot-pop 5.6s ease-in-out infinite;
   }
 
-  .arena-card__promo strong {
+  .arena-card__promo-panel--static {
+    font-size: clamp(1rem, 4.6vw, 1.35rem);
+    letter-spacing: 0.045em;
+    text-align: center;
+    transform-origin: center;
+    animation: promo-alt-static 8s ease-in-out infinite;
+  }
+
+  .arena-card__promo-panel--static strong {
     padding-inline: 0.42rem;
     white-space: nowrap;
+  }
+
+  .arena-card__promo-item {
+    font-size: clamp(1rem, 4.6vw, 1.35rem);
   }
 
   .arena-card__badge {
@@ -1825,6 +1968,7 @@ html, body {
 
   .arena-card__wheel {
     order: 2;
+    margin-top: 1rem;
     margin-bottom: 0;
     flex-shrink: 0;
   }
@@ -2017,12 +2161,24 @@ html, body {
     transition: none !important;
   }
 
-  .arena-card__promo,
-  .arena-card__promo::before,
+  .arena-card__promo-panel--static,
+  .arena-card__promo-panel--marquee,
+  .arena-card__promo-panel--static::before,
+  .arena-card__promo-track,
   .arena-card__badge,
   .arena-card__badge::after,
   .arena-card__jackpot-amount strong,
   .arena-segment__enter::before {
     animation: none;
+  }
+
+  .arena-card__promo-panel--marquee {
+    display: none;
+  }
+
+  .arena-card__promo-panel--static {
+    position: relative;
+    opacity: 1;
+    visibility: visible;
   }
 }

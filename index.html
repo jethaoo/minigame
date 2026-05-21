@@ -46,18 +46,16 @@
           <div class="arena-card__bg" id="bgLayer" aria-hidden="true"></div>
 
           <header class="arena-card__header">
-            <p class="arena-card__promo">
-              Spin Now &amp; Win Up To <strong id="maxPrizeDisplay">MYR 2,688</strong>
-            </p>
-            <div class="arena-card__badge" id="arenaBadge">
-              <span class="arena-card__badge-prize" id="arenaBadgePrize">
-                <span class="arena-card__jackpot-label">Jackpot</span>
-                <span class="arena-card__jackpot-amount">
-                  <span class="arena-card__jackpot-currency">MYR</span>
-                  <strong>288</strong>
+            <p class="arena-card__promo" id="arenaPromo" aria-label="Spin Now and Win Up To">
+              <span class="arena-card__promo-panel arena-card__promo-panel--static">
+                Spin Now &amp; Win Up To <strong id="maxPrizeDisplay">MYR 2,688</strong>
+              </span>
+              <span class="arena-card__promo-panel arena-card__promo-panel--marquee" aria-hidden="true">
+                <span class="arena-card__promo-marquee">
+                  <span class="arena-card__promo-track" id="promoMarqueeTrack"></span>
                 </span>
               </span>
-            </div>
+            </p>
           </header>
 
           <div class="arena-card__stage">
@@ -84,7 +82,7 @@
                   </span>
                   <span class="hub-cost">
                     <img src="assets/icon-triangle.svg" alt="" class="hub-cost-icon" width="14" height="14">
-                    <span>1</span>
+                    <span id="spinCostDisplay">1</span>
                   </span>
                 </button>
               </div>

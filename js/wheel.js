@@ -45,11 +45,14 @@ export class Wheel {
     );
   }
 
-  spin({ skipAnimation = false, segmentIndex = null } = {}) {
+  spin({ segments, skipAnimation = false, segmentIndex = null } = {}) {
     if (this.spinning) return Promise.reject(new Error("Already spinning"));
+    if (!segments?.length) {
+      return Promise.reject(new Error("Segments required"));
+    }
 
-    const index = segmentIndex ?? pickSegmentIndex();
-    const segment = getSegmentById(index);
+    const index = segmentIndex ?? pickSegmentIndex(segments);
+    const segment = getSegmentById(index, segments);
     const jitter = (Math.random() - 0.5) * (SEGMENT_ANGLE - 8);
     const fullSpins = 5 + Math.floor(Math.random() * 4);
     const targetOffset = this._rotationForSegment(index, jitter);

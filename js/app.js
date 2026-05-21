@@ -1,13 +1,10 @@
 ﻿import {
-  SPIN_COST,
   TOKEN_TOP_UP,
-  SEGMENTS,
   ARENAS,
   DEFAULT_ARENA_ID,
-  MAX_DISPLAY_PRIZE,
-  TOP_PRIZE_MYR,
   CASINO_COLORS,
   getArenaById,
+  getArenaTopPrizeMYR,
   getSectorBackgroundLayers,
 } from "./config.js";
 import { loadState, saveState } from "./storage.js";
@@ -18,6 +15,7 @@ const $ = (sel) => document.querySelector(sel);
 
 let state = loadState();
 let currentWheelTheme = null;
+let currentWheelArenaId = null;
 
 const MOCK_WINNERS = [
   { user: "********971", myr: 18 },
@@ -30,11 +28,13 @@ const MOCK_WINNERS = [
 
 const els = {
   bgLayer: $("#bgLayer"),
-  arenaBadgePrize: $("#arenaBadgePrize"),
+  arenaPromo: $("#arenaPromo"),
   maxPrizeDisplay: $("#maxPrizeDisplay"),
+  promoMarqueeTrack: $("#promoMarqueeTrack"),
   arenaPickerSegments: $("#arenaPickerSegments"),
   arenaZoneName: $("#arenaZoneName"),
   arenaTicketLeft: $("#arenaTicketLeft"),
+  spinCostDisplay: $("#spinCostDisplay"),
   mascotImg: $("#mascotImg"),
   wheelStage: $("#wheelStage"),
   wheelFrameImg: $("#wheelFrameImg"),
@@ -55,6 +55,10 @@ const els = {
 
 const wheel = new Wheel($("#wheelRotor"));
 
+function getCurrentArena() {
+  return getArenaById(state.currentArenaId ?? DEFAULT_ARENA_ID);
+}
+
 function formatMYR(n) {
   return `MYR ${n.toLocaleString("en-MY", { minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2 })}`;
 }
@@ -65,30 +69,41 @@ function maskUsername(seed) {
 }
 
 function getArenaJackpotMYR() {
-  return Math.max(...SEGMENTS.map((segment) => segment.myr));
+  return getArenaTopPrizeMYR(state.currentArenaId ?? DEFAULT_ARENA_ID);
 }
 
-function getJackpotMarkup(amount) {
-  return `
-    <span class="arena-card__jackpot-label">Jackpot</span>
-    <span class="arena-card__jackpot-amount">
-      <span class="arena-card__jackpot-currency">MYR</span>
-      <strong>${amount.toLocaleString("en-MY")}</strong>
-    </span>`;
+function getPromoMarqueeText() {
+  return `Jackpot ${formatMYR(getArenaJackpotMYR())}`;
+}
+
+function updatePromoMarquee() {
+  if (!els.promoMarqueeTrack) return;
+
+  const arena = getCurrentArena();
+  const marqueeText = getPromoMarqueeText();
+  const amount = getArenaJackpotMYR();
+  const item = `<span class="arena-card__promo-item">Jackpot <strong>${formatMYR(amount)}</strong></span>`;
+  els.promoMarqueeTrack.innerHTML = item.repeat(4);
+  els.promoMarqueeTrack.style.setProperty("--promo-marquee-loop", "25%");
+
+  const staticText = `Spin Now and Win Up To ${formatMYR(arena.maxDisplayPrize)}`;
+  if (els.arenaPromo) {
+    els.arenaPromo.setAttribute("aria-label", `${staticText}. ${marqueeText}.`);
+  }
 }
 
 function isLightSegmentColor(hex) {
   return ["#d4a017", "#f0c85a"].includes(hex.toLowerCase());
 }
 
-function buildSectors(theme) {
+function buildSectors(theme, segments) {
   const sectorsEl = $("#wheelSectors");
   const container = $("#wheelSegments");
   sectorsEl.style.backgroundColor = "#252038";
-  sectorsEl.style.backgroundImage = getSectorBackgroundLayers(theme);
+  sectorsEl.style.backgroundImage = getSectorBackgroundLayers(theme, segments);
   container.innerHTML = "";
 
-  SEGMENTS.forEach((seg, i) => {
+  segments.forEach((seg, i) => {
     const el = document.createElement("div");
     el.className = "wheel-segment";
     el.style.setProperty("--i", i);
@@ -109,13 +124,19 @@ function buildSectors(theme) {
   });
 }
 
-function applyWheelTheme(theme, wheelFrame) {
-  els.wheelFrameImg.src = wheelFrame;
-  if (currentWheelTheme === theme) return;
-  currentWheelTheme = theme;
-  els.wheelStage.classList.remove("wheel-stage--squid", "wheel-stage--casino");
-  els.wheelStage.classList.add(`wheel-stage--${theme}`);
-  buildSectors(theme);
+function applyWheelForArena(arena) {
+  els.wheelFrameImg.src = arena.wheelFrame;
+  const theme = arena.wheelTheme;
+  const needsRebuild =
+    currentWheelTheme !== theme || currentWheelArenaId !== arena.id;
+
+  if (needsRebuild) {
+    currentWheelTheme = theme;
+    currentWheelArenaId = arena.id;
+    els.wheelStage.classList.remove("wheel-stage--squid", "wheel-stage--casino");
+    els.wheelStage.classList.add(`wheel-stage--${theme}`);
+    buildSectors(theme, arena.segments);
+  }
 }
 
 function applyArenaGame(arena) {
@@ -124,7 +145,7 @@ function applyArenaGame(arena) {
   els.mascotImg.alt = `${arena.zoneName} mascot`;
   document.body.classList.remove("arena-1", "arena-2", "arena-3");
   document.body.classList.add(`arena-${arena.id}`);
-  applyWheelTheme(arena.wheelTheme, arena.wheelFrame);
+  applyWheelForArena(arena);
 }
 
 function updateArenaPickerUI(activeId) {
@@ -211,13 +232,16 @@ function renderWinnerList() {
 }
 
 function render() {
+  const arena = getCurrentArena();
   els.tokens.textContent = state.tokens;
   els.wallet.textContent = formatMYR(state.walletMYR);
   els.arenaTicketLeft.textContent = state.tokens;
   els.skipCheck.checked = state.skipAnimation;
-  els.maxPrizeDisplay.textContent = formatMYR(MAX_DISPLAY_PRIZE);
-  els.arenaBadgePrize.innerHTML = getJackpotMarkup(getArenaJackpotMYR());
-
+  els.maxPrizeDisplay.textContent = formatMYR(arena.maxDisplayPrize);
+  if (els.spinCostDisplay) {
+    els.spinCostDisplay.textContent = String(arena.spinCost);
+  }
+  updatePromoMarquee();
   renderWinnerList();
 }
 
@@ -236,13 +260,16 @@ function showToast(msg) {
 
 function openWinModal(segment) {
   const { myr, label } = segment;
+  const topPrize = getArenaTopPrizeMYR(state.currentArenaId ?? DEFAULT_ARENA_ID);
+  const bigWinThreshold = topPrize / 2;
+
   els.winAmount.textContent = formatMYR(myr);
-  els.winAmount.classList.toggle("is-big", myr >= 128);
+  els.winAmount.classList.toggle("is-big", myr >= bigWinThreshold);
   els.winAmount.classList.toggle("is-zero", myr === 0);
 
   if (myr === 0) {
     els.winSubtitle.textContent = "Better luck next spin!";
-  } else if (myr >= TOP_PRIZE_MYR) {
+  } else if (myr >= topPrize) {
     els.winSubtitle.textContent = "Top prize unlocked!";
   } else {
     els.winSubtitle.textContent = "Added to your total winnings.";
@@ -262,9 +289,11 @@ function closeWinModal() {
 }
 
 function applyWin(segment) {
+  const topPrize = getArenaTopPrizeMYR(state.currentArenaId ?? DEFAULT_ARENA_ID);
+
   state.walletMYR += segment.myr;
   state.lastWin = { label: segment.label, myr: segment.myr, at: Date.now() };
-  if (segment.myr === TOP_PRIZE_MYR) state.wonTopPrize = true;
+  if (segment.myr >= topPrize) state.wonTopPrize = true;
 
   state.recentWins.unshift({
     label: segment.label,
@@ -279,12 +308,17 @@ function applyWin(segment) {
 
 async function handleSpin() {
   if (wheel.spinning) return;
-  if (state.tokens < SPIN_COST) {
-    showToast("You need 1 token to spin.");
+
+  const arena = getCurrentArena();
+  const spinCost = arena.spinCost;
+
+  if (state.tokens < spinCost) {
+    const tokenWord = spinCost === 1 ? "token" : "tokens";
+    showToast(`You need ${spinCost} ${tokenWord} to spin.`);
     return;
   }
 
-  state.tokens -= SPIN_COST;
+  state.tokens -= spinCost;
   saveState(state);
   render();
 
@@ -292,7 +326,10 @@ async function handleSpin() {
   els.spinBtn.setAttribute("aria-busy", "true");
 
   try {
-    const segment = await wheel.spin({ skipAnimation: state.skipAnimation });
+    const segment = await wheel.spin({
+      segments: arena.segments,
+      skipAnimation: state.skipAnimation,
+    });
     applyWin(segment);
   } catch {
     showToast("Please wait for the wheel to stop.");
