@@ -43,7 +43,9 @@
 
       <div class="app-main">
         <section class="arena-card" aria-label="Spin wheel arena">
-          <div class="arena-card__bg" id="bgLayer" aria-hidden="true"></div>
+          <div class="arena-card__bg" id="bgLayer" aria-hidden="true">
+            <img class="arena-card__bg-img" id="bgLayerImg" alt="" />
+          </div>
 
           <header class="arena-card__header">
             <p class="arena-card__promo" id="arenaPromo" aria-label="Spin Now and Win Up To">
@@ -76,6 +78,7 @@
                 </div>
                 <img src="assets/wheel-frame.png" alt="" class="wheel-frame" id="wheelFrameImg" width="400" height="400">
                 <button type="button" id="spinBtn" class="wheel-hub">
+                  <span class="wheel-hub__shine" aria-hidden="true"></span>
                   <span class="hub-main">
                     <span>SPIN</span>
                     <span>NOW</span>
@@ -106,16 +109,18 @@
                 <span class="info-card__title-icon" aria-hidden="true">&#9776;</span>
                 Daily Mission
               </h2>
-              <span class="info-card__progress" id="missionProgress">0/2</span>
+              <span class="info-card__progress" id="missionProgress">0/10 spins</span>
             </header>
+            <p class="info-card__hint">Every 10 spins: +5 tokens (max 20 free tokens daily)</p>
             <div class="mission-track" aria-hidden="true">
               <div class="mission-track__bar">
                 <div class="mission-track__fill" id="missionTrackFill"></div>
               </div>
-              <div class="mission-track__milestones">
-                <span class="mission-milestone"><span class="mission-milestone__dot"></span>100</span>
-                <span class="mission-milestone"><span class="mission-milestone__dot"></span>500</span>
-                <span class="mission-milestone"><span class="mission-milestone__dot"></span>1000</span>
+              <div class="mission-track__milestones" id="missionMilestones">
+                <span class="mission-milestone" data-spins="10"><span class="mission-milestone__dot"></span>10</span>
+                <span class="mission-milestone" data-spins="20"><span class="mission-milestone__dot"></span>20</span>
+                <span class="mission-milestone" data-spins="30"><span class="mission-milestone__dot"></span>30</span>
+                <span class="mission-milestone" data-spins="40"><span class="mission-milestone__dot"></span>40</span>
               </div>
             </div>
             <p class="info-card__stat">Total won: <strong id="walletAmount">MYR 0</strong></p>
@@ -129,7 +134,9 @@
               </h2>
               <span class="info-card__deco" aria-hidden="true">&#127942;</span>
             </header>
-            <ul class="winner-list" id="winnerList"></ul>
+            <div class="winner-list-viewport" id="winnerListViewport">
+              <ul class="winner-list" id="winnerList"></ul>
+            </div>
           </article>
         </section>
       </div>

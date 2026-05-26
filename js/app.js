@@ -1,33 +1,40 @@
-﻿import {
+import {
   TOKEN_TOP_UP,
   ARENAS,
   DEFAULT_ARENA_ID,
-  CASINO_COLORS,
   getArenaById,
   getArenaTopPrizeMYR,
+  isWinnerListPrize,
   getSectorBackgroundLayers,
 } from "./config.js";
 import { loadState, saveState } from "./storage.js";
 import { Wheel } from "./wheel.js";
 import { getSegmentIconHtml } from "./icons.js";
+import {
+  ensureDailyMission,
+  recordMissionSpin,
+  getMissionProgress,
+} from "./mission.js";
 
 const $ = (sel) => document.querySelector(sel);
 
-let state = loadState();
+let state = ensureDailyMission(loadState());
+saveState(state);
 let currentWheelTheme = null;
 let currentWheelArenaId = null;
 
 const MOCK_WINNERS = [
-  { user: "********971", myr: 18 },
-  { user: "********482", myr: 128 },
-  { user: "********103", myr: 68 },
-  { user: "********556", myr: 28 },
-  { user: "********229", myr: 8 },
   { user: "********841", myr: 288 },
+  { user: "********482", myr: 128 },
+  { user: "********103", myr: 888 },
+  { user: "********556", myr: 384 },
+  { user: "********229", myr: 2688 },
+  { user: "********971", myr: 1200 },
 ];
 
 const els = {
   bgLayer: $("#bgLayer"),
+  bgLayerImg: $("#bgLayerImg"),
   arenaPromo: $("#arenaPromo"),
   maxPrizeDisplay: $("#maxPrizeDisplay"),
   promoMarqueeTrack: $("#promoMarqueeTrack"),
@@ -44,7 +51,10 @@ const els = {
   skipCheck: $("#skipAnimation"),
   addTokens: $("#addTokens"),
   winnerList: $("#winnerList"),
+  winnerListViewport: $("#winnerListViewport"),
   missionProgress: $("#missionProgress"),
+  missionTrackFill: $("#missionTrackFill"),
+  missionMilestones: $("#missionMilestones"),
   winModal: $("#winModal"),
   winAmount: $("#winAmount"),
   winSubtitle: $("#winSubtitle"),
@@ -93,7 +103,12 @@ function updatePromoMarquee() {
 }
 
 function isLightSegmentColor(hex) {
-  return ["#d4a017", "#f0c85a"].includes(hex.toLowerCase());
+  const n = parseInt(hex.slice(1), 16);
+  const r = (n >> 16) & 0xff;
+  const g = (n >> 8) & 0xff;
+  const b = n & 0xff;
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.52;
 }
 
 function buildSectors(theme, segments) {
@@ -109,8 +124,7 @@ function buildSectors(theme, segments) {
     el.style.setProperty("--i", i);
     el.dataset.index = seg.id;
 
-    const color = theme === "casino" ? CASINO_COLORS[i] : seg.sectorColor;
-    const contentClass = isLightSegmentColor(color)
+    const contentClass = isLightSegmentColor(seg.sectorColor)
       ? "segment-content segment-content--dark"
       : "segment-content";
 
@@ -140,7 +154,9 @@ function applyWheelForArena(arena) {
 }
 
 function applyArenaGame(arena) {
-  els.bgLayer.style.backgroundImage = `url("${arena.background}")`;
+  if (els.bgLayerImg) {
+    els.bgLayerImg.src = arena.background;
+  }
   els.mascotImg.src = arena.mascot;
   els.mascotImg.alt = `${arena.zoneName} mascot`;
   document.body.classList.remove("arena-1", "arena-2", "arena-3");
@@ -202,7 +218,8 @@ function buildArenaPicker() {
 }
 
 function buildWinnerRows() {
-  const fromState = state.recentWins.map((w, i) => ({
+  const qualifyingWins = state.recentWins.filter((w) => isWinnerListPrize(w.myr));
+  const fromState = qualifyingWins.map((w, i) => ({
     user: maskUsername(w.at ?? i),
     myr: w.myr,
     isYou: i === 0,
@@ -218,9 +235,39 @@ function buildWinnerRows() {
   return rows.slice(0, 8);
 }
 
-function renderWinnerList() {
-  const rows = buildWinnerRows();
-  els.winnerList.innerHTML = rows
+function renderMission() {
+  const progress = getMissionProgress(state);
+
+  if (els.missionProgress) {
+    els.missionProgress.textContent = progress.progressLabel;
+  }
+
+  if (els.missionTrackFill) {
+    els.missionTrackFill.style.width = `${progress.fillPercent}%`;
+  }
+
+  if (els.missionMilestones) {
+    els.missionMilestones
+      .querySelectorAll(".mission-milestone")
+      .forEach((el, i) => {
+        const milestone = progress.milestones[i];
+        if (!milestone) return;
+        el.style.left = `${milestone.positionPercent}%`;
+        el.classList.toggle("is-complete", milestone.claimed);
+        el.setAttribute(
+          "aria-label",
+          milestone.claimed
+            ? `${milestone.target} spins — reward claimed`
+            : `${milestone.target} spins`
+        );
+      });
+  }
+}
+
+const WINNER_SCROLL_SPEED_PX = 28;
+
+function buildWinnerListHtml(rows) {
+  return rows
     .map(
       (r) => `
       <li class="winner-list__item${r.isYou ? " winner-list__item--you" : ""}">
@@ -229,6 +276,33 @@ function renderWinnerList() {
       </li>`
     )
     .join("");
+}
+
+function renderWinnerList() {
+  const rows = buildWinnerRows();
+  const list = els.winnerList;
+  const viewport = els.winnerListViewport;
+  if (!list || !viewport) return;
+
+  const itemsHtml = buildWinnerListHtml(rows);
+  const reducedMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)"
+  ).matches;
+
+  list.innerHTML = itemsHtml;
+  list.classList.remove("is-auto-scroll");
+  list.style.removeProperty("--winner-scroll-duration");
+
+  requestAnimationFrame(() => {
+    const overflows = list.scrollHeight > viewport.clientHeight + 1;
+    if (!overflows || reducedMotion) return;
+
+    list.innerHTML = itemsHtml + itemsHtml;
+    const halfHeight = list.scrollHeight / 2;
+    const duration = Math.max(8, halfHeight / WINNER_SCROLL_SPEED_PX);
+    list.style.setProperty("--winner-scroll-duration", `${duration}s`);
+    list.classList.add("is-auto-scroll");
+  });
 }
 
 function render() {
@@ -242,6 +316,7 @@ function render() {
     els.spinCostDisplay.textContent = String(arena.spinCost);
   }
   updatePromoMarquee();
+  renderMission();
   renderWinnerList();
 }
 
@@ -299,6 +374,7 @@ function applyWin(segment) {
     label: segment.label,
     myr: segment.myr,
     at: Date.now(),
+    arenaId: state.currentArenaId ?? DEFAULT_ARENA_ID,
   });
   state.recentWins = state.recentWins.slice(0, 5);
   saveState(state);
@@ -330,7 +406,12 @@ async function handleSpin() {
       segments: arena.segments,
       skipAnimation: state.skipAnimation,
     });
+    const { tokensGranted } = recordMissionSpin(state);
     applyWin(segment);
+    if (tokensGranted > 0) {
+      const rewardWord = tokensGranted === 1 ? "token" : "tokens";
+      showToast(`Daily Mission: +${tokensGranted} ${rewardWord}!`);
+    }
   } catch {
     showToast("Please wait for the wheel to stop.");
   } finally {

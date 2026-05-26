@@ -1,19 +1,38 @@
 export const STORAGE_KEY = "squidSpinState";
 export const TOKEN_TOP_UP = 5;
+export const MISSION_SPINS_PER_REWARD = 10;
+export const MISSION_REWARD_TOKENS = 5;
+export const MISSION_MAX_DAILY_TOKENS = 20;
+export const MISSION_MAX_REWARDS =
+  MISSION_MAX_DAILY_TOKENS / MISSION_REWARD_TOKENS;
+export const MISSION_MAX_DAILY_SPINS =
+  MISSION_MAX_REWARDS * MISSION_SPINS_PER_REWARD;
 export const POINTER_ANGLE = 0;
 export const SEGMENT_ANGLE = 45;
 export const SPIN_DURATION_MS = 4200;
 export const DEFAULT_ARENA_ID = 1;
 
+/** Rarity palette: gray (low) → blue → purple → gold (jackpot), two shades per band. */
+const RARITY_BANDS = [
+  { rarity: "low", sectorColor: "#6b7589" },
+  { rarity: "low", sectorColor: "#4f5869" },
+  { rarity: "uncommon", sectorColor: "#3b82d6" },
+  { rarity: "uncommon", sectorColor: "#2563b5" },
+  { rarity: "rare", sectorColor: "#8b4fd9" },
+  { rarity: "rare", sectorColor: "#6c35ad" },
+  { rarity: "jackpot", sectorColor: "#b8890a" },
+  { rarity: "jackpot", sectorColor: "#e8c84a" },
+];
+
 const SEGMENT_TEMPLATE = [
-  { icon: "circle", sectorColor: "#24151b", weight: 23 },
-  { icon: "square", sectorColor: "#005f5b", weight: 19 },
-  { icon: "circle", sectorColor: "#7a1024", weight: 17 },
-  { icon: "circle", sectorColor: "#b11226", weight: 14 },
-  { icon: "triangle", sectorColor: "#151923", weight: 12 },
-  { icon: "square", sectorColor: "#0b6f3a", weight: 9 },
-  { icon: "triangle", sectorColor: "#d4a017", weight: 4 },
-  { icon: "triangle", sectorColor: "#f0c85a", weight: 2 },
+  { icon: "circle", weight: 23, ...RARITY_BANDS[0] },
+  { icon: "square", weight: 19, ...RARITY_BANDS[1] },
+  { icon: "circle", weight: 17, ...RARITY_BANDS[2] },
+  { icon: "circle", weight: 14, ...RARITY_BANDS[3] },
+  { icon: "triangle", weight: 12, ...RARITY_BANDS[4] },
+  { icon: "square", weight: 9, ...RARITY_BANDS[5] },
+  { icon: "triangle", weight: 4, ...RARITY_BANDS[6] },
+  { icon: "triangle", weight: 2, ...RARITY_BANDS[7] },
 ];
 
 const ARENA_PRIZES = {
@@ -34,17 +53,6 @@ function buildArenaSegments(prizes) {
     ...SEGMENT_TEMPLATE[id],
   }));
 }
-
-export const CASINO_COLORS = [
-  "#b11226",
-  "#d4a017",
-  "#0b6f3a",
-  "#151923",
-  "#7a1024",
-  "#005f5b",
-  "#24151b",
-  "#f0c85a",
-];
 
 export const ARENAS = [
   {
@@ -94,6 +102,25 @@ export function getArenaTopPrizeMYR(arenaId) {
   return getArenaById(arenaId).maxDisplayPrize;
 }
 
+export function getArenaTopPrizeValues(arenaId, count = 2) {
+  const prizes = getArenaById(arenaId).segments.map((s) => s.myr);
+  return [...prizes].sort((a, b) => b - a).slice(0, count);
+}
+
+export function getWinnerListPrizeValues() {
+  const values = new Set();
+  for (const arena of ARENAS) {
+    for (const myr of getArenaTopPrizeValues(arena.id)) {
+      values.add(myr);
+    }
+  }
+  return values;
+}
+
+export function isWinnerListPrize(myr) {
+  return getWinnerListPrizeValues().has(myr);
+}
+
 export function pickSegmentIndex(segments) {
   const total = segments.reduce((sum, s) => sum + s.weight, 0);
   let roll = Math.random() * total;
@@ -135,17 +162,13 @@ function buildConicFromColors(colors) {
   return `conic-gradient(from 0deg, ${stops.join(", ")})`;
 }
 
-function getSquidConic(segments) {
+function getWheelConic(segments) {
   return buildConicFromColors(segments.map((s) => s.sectorColor));
-}
-
-function getCasinoConic() {
-  return buildConicFromColors(CASINO_COLORS);
 }
 
 export function getSectorBackgroundLayers(theme = "squid", segments) {
   const hub = "#2a2438";
-  const conic = theme === "casino" ? getCasinoConic() : getSquidConic(segments);
+  const conic = getWheelConic(segments);
   return [
     `radial-gradient(circle at 50% 50%, #3d3548 0%, ${hub} 26%, rgba(42, 36, 56, 0) 28%)`,
     "radial-gradient(circle at 50% 30%, rgba(255, 255, 255, 0.28) 0%, rgba(42, 36, 56, 0) 50%)",

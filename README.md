@@ -36,7 +36,8 @@ Each wheel segment is an object built at load time in [`js/config.js`](js/config
 | `label` | `MYR {n}` via `en-MY` locale | Shown on wheel and in win modal |
 | `weight` | `SEGMENT_TEMPLATE[tier]` | Relative probability (same all arenas) |
 | `icon` | `circle` / `square` / `triangle` | Squid Game marker SVG on label |
-| `sectorColor` | Hex per tier | Squid theme conic gradient only |
+| `rarity` | `low` / `uncommon` / `rare` / `jackpot` | Visual tier band (two slices per band) |
+| `sectorColor` | Hex per tier | Wheel conic gradient (all themes) |
 
 `buildArenaSegments(prizes)` merges `ARENA_PRIZES` amounts with `SEGMENT_TEMPLATE` metadata. Each arena stores the result on `arena.segments`. `maxDisplayPrize` equals tier-8 `myr` (top/jackpot) for that arena.
 
@@ -54,19 +55,19 @@ Scaling is tier-by-tier (rounded “clean” numbers), not a single multiplier o
 
 Eight tiers per wheel. **Weights are identical in every arena**; only `myr` / `label` change. Weights sum to **100** (each weight ≈ **% chance** per spin).
 
-| Tier | `id` | Weight | Chance | Icon | Squid `sectorColor` | Arena 1 | Arena 2 | Arena 3 |
-|------|------|--------|--------|------|---------------------|---------|---------|---------|
-| 1 | 0 | 23 | 23% | circle | `#24151b` | MYR 0 | MYR 0 | MYR 0 |
-| 2 | 1 | 19 | 19% | square | `#005f5b` | MYR 3 | MYR 9 | MYR 28 |
-| 3 | 2 | 17 | 17% | circle | `#7a1024` | MYR 8 | MYR 24 | MYR 75 |
-| 4 | 3 | 14 | 14% | circle | `#b11226` | MYR 18 | MYR 54 | MYR 168 |
-| 5 | 4 | 12 | 12% | triangle | `#151923` | MYR 28 | MYR 84 | MYR 260 |
-| 6 | 5 | 9 | 9% | square | `#0b6f3a` | MYR 68 | MYR 204 | MYR 630 |
-| 7 | 6 | 4 | 4% | triangle | `#d4a017` | MYR 128 | MYR 384 | MYR 1,200 |
-| 8 | 7 | 2 | 2% | triangle | `#f0c85a` | MYR 288 | MYR 888 | MYR 2,688 |
-| **Total** | | **100** | **100%** | | | | | |
+| Tier | `id` | Weight | Chance | Icon | Rarity | `sectorColor` | Arena 1 | Arena 2 | Arena 3 |
+|------|------|--------|--------|------|--------|---------------|---------|---------|---------|
+| 1 | 0 | 23 | 23% | circle | low | `#6b7589` | MYR 0 | MYR 0 | MYR 0 |
+| 2 | 1 | 19 | 19% | square | low | `#4f5869` | MYR 3 | MYR 9 | MYR 28 |
+| 3 | 2 | 17 | 17% | circle | uncommon | `#3b82d6` | MYR 8 | MYR 24 | MYR 75 |
+| 4 | 3 | 14 | 14% | circle | uncommon | `#2563b5` | MYR 18 | MYR 54 | MYR 168 |
+| 5 | 4 | 12 | 12% | triangle | rare | `#8b4fd9` | MYR 28 | MYR 84 | MYR 260 |
+| 6 | 5 | 9 | 9% | square | rare | `#6c35ad` | MYR 68 | MYR 204 | MYR 630 |
+| 7 | 6 | 4 | 4% | triangle | jackpot | `#b8890a` | MYR 128 | MYR 384 | MYR 1,200 |
+| 8 | 7 | 2 | 2% | triangle | jackpot | `#e8c84a` | MYR 288 | MYR 888 | MYR 2,688 |
+| **Total** | | **100** | **100%** | | | | | | |
 
-**Casino theme (Arena 2):** Wheel *labels* and payouts use the table above; sector *colors* on the conic background use fixed `CASINO_COLORS` by slot index (visual only, does not affect odds).
+**Rarity colors** are the same on every arena and theme (squid + casino): gray → blue → purple → gold for quick readability. Odds and MYR amounts are unchanged.
 
 ### Weighted selection algorithm
 
@@ -192,8 +193,9 @@ Marquee alternation timing is CSS-only (`promo-alt-static` / `promo-alt-marquee`
 
 ### Winner list (display only)
 
-- **Your rows:** Up to 5 from `state.recentWins` (newest first); first row marked “you”.
-- **Fill:** Mock entries from `MOCK_WINNERS` in `app.js` until 8 rows (Arena-1-style amounts; not scaled per current arena).
+- **Eligible prizes:** Top 2 MYR tiers per arena only — Arena 1: 128 / 288; Arena 2: 384 / 888; Arena 3: 1200 / 2688 (`getWinnerListPrizeValues()` in config).
+- **Your rows:** Up to 5 from `state.recentWins` (newest first), filtered to eligible prizes; first qualifying row marked “you”.
+- **Fill:** Mock entries from `MOCK_WINNERS` in `app.js` until 8 rows (uses top-tier amounts across all arenas).
 - **Dedup:** Skips mock if same masked user + `myr` already present.
 
 ### Tokens and economy
@@ -229,7 +231,7 @@ Other UI:
 - **Skip animation:** Checkbox in sidebar; persisted; skips wheel transition (respects `prefers-reduced-motion`).
 - **Win modal:** Shows amount, subtitle, COLLECT; Escape or backdrop click closes.
 - **Winner list:** Up to 8 rows (recent wins + sample entries).
-- **Daily Mission:** Progress display (prototype; not tied to spin logic).
+- **Daily Mission:** Every 10 completed spins awards 5 tokens (milestones at 10 / 20 / 30 / 40 spins). Max 20 free tokens per calendar day; resets at midnight (local time).
 
 ### Persisted state (`localStorage` key: `squidSpinState`)
 
@@ -242,6 +244,9 @@ Other UI:
 | `wonTopPrize` | Boolean (any arena top prize won) |
 | `lastWin` | Last spin result `{ label, myr, at }` |
 | `recentWins` | Up to 5 recent wins |
+| `dailyMissionDate` | `YYYY-MM-DD` for daily reset |
+| `dailySpinCount` | Spins completed today |
+| `dailyMissionRewardsClaimed` | Mission rewards claimed today (0–4) |
 
 ### Configuration source
 
@@ -261,8 +266,9 @@ After editing `ARENA_PRIZES`, ensure `maxDisplayPrize` matches the last tier val
 |------|-------------------|
 | [`js/config.js`](js/config.js) | Segment definitions, `pickSegmentIndex`, `getSegmentById`, arena getters, wheel background gradients |
 | [`js/wheel.js`](js/wheel.js) | Spin animation, calls picker, returns winning `segment` object |
-| [`js/app.js`](js/app.js) | Token gate, `applyWin`, UI labels, promo, arena switch, win modal |
-| [`js/storage.js`](js/storage.js) | Persist `tokens`, `walletMYR`, `recentWins`, `wonTopPrize`, `currentArenaId` |
+| [`js/app.js`](js/app.js) | Token gate, `applyWin`, UI labels, promo, arena switch, win modal, mission UI |
+| [`js/mission.js`](js/mission.js) | Daily spin counter, milestone rewards, midnight reset |
+| [`js/storage.js`](js/storage.js) | Persist `tokens`, `walletMYR`, `recentWins`, `wonTopPrize`, `currentArenaId`, mission fields |
 
 ### Constants
 
@@ -272,6 +278,9 @@ After editing `ARENA_PRIZES`, ensure `maxDisplayPrize` matches the last tier val
 | `SEGMENT_ANGLE` | 45° | 8 segments; rotation math |
 | `POINTER_ANGLE` | 0° | Pointer at top of wheel |
 | `TOKEN_TOP_UP` | 5 | Dev “+” button grant |
+| `MISSION_SPINS_PER_REWARD` | 10 | Spins needed per mission reward |
+| `MISSION_REWARD_TOKENS` | 5 | Tokens granted per milestone |
+| `MISSION_MAX_DAILY_TOKENS` | 20 | Max free mission tokens per day |
 | `DEFAULT_ARENA_ID` | 1 | New player default zone |
 | `STORAGE_KEY` | `squidSpinState` | `localStorage` key |
 
@@ -281,9 +290,7 @@ After editing `ARENA_PRIZES`, ensure `maxDisplayPrize` matches the last tier val
 - No separate token pool per arena (one shared `tokens` count).
 - No cost-adjusted RTP display; higher arenas cost more tokens but are not normalized to expected MYR per token in the UI.
 - `wonTopPrize` is a single boolean (not per-arena).
-- Daily Mission progress is not driven by spins or wins.
 - Sidebar / bottom nav links are placeholders (`#`).
-- Mock winner amounts do not update when viewing Arena 2 or 3.
 
 ---
 

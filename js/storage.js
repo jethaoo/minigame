@@ -8,6 +8,9 @@ const DEFAULT_STATE = {
   lastWin: null,
   recentWins: [],
   currentArenaId: DEFAULT_ARENA_ID,
+  dailyMissionDate: null,
+  dailySpinCount: 0,
+  dailyMissionRewardsClaimed: 0,
 };
 
 export function loadState() {
